@@ -50,7 +50,9 @@ async function migrate(run: Runner) {
   ddl.push(
     `alter table schools add column if not exists choice boolean not null default false`,
     `alter table schools add column if not exists edited boolean not null default false`,
-    `create table if not exists meta (key text primary key, value text not null)`);
+    `create table if not exists meta (key text primary key, value text not null)`,
+    `create table if not exists hits (key text not null, at timestamptz not null default now())`,
+    `create index if not exists hits_key_at on hits (key, at)`);
   for (const s of ddl) await run(s);
 
   // Starter data: inserted on first run, and refreshed when SEED_VERSION changes.
@@ -76,7 +78,11 @@ async function migrate(run: Runner) {
   const email = (process.env.ADMIN_EMAIL || "admin@schoolcove.in").toLowerCase();
   const existing = await run(`select id from users where role='admin' limit 1`);
   if (existing.length === 0) {
-    const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD || "schoolcove-admin", 10);
+    const prod = process.env.NODE_ENV === "production" && !!process.env.DATABASE_URL;
+    const pw = process.env.ADMIN_PASSWORD || (prod ? "" : "schoolcove-admin");
+    // In production an admin is only created when ADMIN_PASSWORD is set, so there is never a known default login.
+    if (!pw || (prod && pw.length < 10)) return;
+    const hash = await bcrypt.hash(pw, 12);
     await run(
       `insert into users (email,password_hash,name,role,status) values ($1,$2,'SchoolCove Admin','admin','approved') on conflict (email) do nothing`,
       [email, hash]
@@ -91,4 +97,13 @@ export async function q<T = Row>(text: string, params: any[] = []): Promise<T[]>
   // PGlite returns jsonb as objects; postgres.js too. Normalise just in case a driver returns a string.
   for (const r of rows) if (typeof r.data === "string") { try { r.data = JSON.parse(r.data); } catch {} }
   return rows as T[];
+}
+
+/** Returns true when the caller is still within the limit. Counts one hit. */
+export async function rateLimit(key: string, max: number, windowSeconds: number): Promise<boolean> {
+  const [{ n }] = await q<{ n: number }>(`select count(*)::int as n from hits where key=$1 and at > now() - ($2 || ' seconds')::interval`, [key, String(windowSeconds)]);
+  if (n >= max) return false;
+  await q(`insert into hits (key) values ($1)`, [key]);
+  if (Math.random() < 0.02) await q(`delete from hits where at < now() - interval '2 days'`);
+  return true;
 }

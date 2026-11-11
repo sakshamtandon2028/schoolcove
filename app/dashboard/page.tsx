@@ -2,7 +2,7 @@ import Link from "next/link";
 import { q } from "@/lib/db";
 import { requireSchoolUser } from "@/lib/auth";
 import { logout } from "@/lib/actions";
-import { schoolById } from "@/lib/schools";
+import { schoolByIdFresh as schoolById } from "@/lib/schools";
 import type { Lead } from "@/lib/types";
 import LeadsTable from "@/components/LeadsTable";
 import { ProfileForm } from "@/components/AuthForms";
@@ -19,7 +19,7 @@ export default async function Dashboard() {
     return (
       <div className="container-x max-w-xl py-16 text-center">
         <p className="text-5xl" aria-hidden="true">{user.status === "rejected" ? "🚫" : "⏳"}</p>
-        <h1 className="mt-4 text-3xl font-semibold">{user.status === "rejected" ? "We could not verify this account" : "Your account is being verified"}</h1>
+        <h1 className="mt-4 text-3xl">{user.status === "rejected" ? "We could not verify this account" : "Your account is being verified"}</h1>
         <p className="mt-2 leading-7 text-muted">
           {user.status === "rejected"
             ? "Please write to us if you think this is a mistake."
@@ -42,7 +42,7 @@ export default async function Dashboard() {
   return (
     <div className="container-x pt-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div><p className="eyebrow">School dashboard</p><h1 className="mt-1 text-3xl font-semibold sm:text-4xl">{school.name}</h1><p className="text-muted">{school.locality} · Logged in as {user.name}</p></div>
+        <div><p className="eyebrow">School dashboard</p><h1 className="mt-1 text-3xl sm:text-4xl">{school.name}</h1><p className="text-muted">{school.locality} · Logged in as {user.name}</p></div>
         <div className="flex gap-2"><Link href={`/schools/${school.slug}`} className="btn btn-ghost !min-h-10">View public page</Link><Logout /></div>
       </div>
 
@@ -52,7 +52,7 @@ export default async function Dashboard() {
 
       <section className="card mt-6 p-5 sm:p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div><h2 className="text-2xl font-semibold">Parent enquiries</h2><p className="text-sm text-muted">Call new enquiries within a day. Update the status so you can track what happened.</p></div>
+          <div><h2 className="text-2xl">Parent enquiries</h2><p className="text-sm text-muted">Call new enquiries within a day. Update the status so you can track what happened.</p></div>
           <a href="/api/export" className="btn btn-primary">⬇️ Download Excel</a>
         </div>
         {leads.length > unlocked.length && (
@@ -62,7 +62,7 @@ export default async function Dashboard() {
       </section>
 
       <section className="card mt-6 p-5 sm:p-6">
-        <h2 className="text-2xl font-semibold">Your school page</h2>
+        <h2 className="text-2xl">Your school page</h2>
         <p className="mb-5 text-sm text-muted">Parents trust pages that are complete and current. Changes go live as soon as you save.</p>
         <ProfileForm school={school} />
       </section>

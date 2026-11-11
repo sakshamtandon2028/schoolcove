@@ -1,13 +1,16 @@
+import { unstable_cache } from "next/cache";
 import { q } from "./db";
 import type { School } from "./types";
 
-export async function allSchools(): Promise<School[]> {
+export async function loadSchools(): Promise<School[]> {
   return q<School>(`select * from schools order by choice desc, promoted desc, partner desc, (jsonb_array_length(data->'images')>0) desc, name asc, locality asc`);
 }
+// School data changes rarely, so pages read it from a cache that is cleared whenever a school is edited.
+export const allSchools = unstable_cache(loadSchools, ["schools-all"], { tags: ["schools"], revalidate: 600 });
 export async function schoolBySlug(slug: string): Promise<School | null> {
-  return (await q<School>(`select * from schools where slug=$1`, [slug]))[0] || null;
+  return (await allSchools()).find((s) => s.slug === slug) || null;
 }
-export async function schoolById(id: number): Promise<School | null> {
+export async function schoolByIdFresh(id: number): Promise<School | null> {
   return (await q<School>(`select * from schools where id=$1`, [id]))[0] || null;
 }
 

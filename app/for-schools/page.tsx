@@ -1,20 +1,19 @@
 import Link from "next/link";
 import { allSchools } from "@/lib/schools";
-import { getUser } from "@/lib/auth";
 import { SignupForm } from "@/components/AuthForms";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "For schools: get admission enquiries from parents" };
 
 export default async function ForSchools() {
-  const [schools, user] = await Promise.all([allSchools(), getUser()]);
+  const schools = await allSchools();
   const price = Number(process.env.LEAD_PRICE || 500);
   return (
     <div className="container-x pt-10">
       <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr]">
         <div>
           <p className="eyebrow">For preschools, daycares and schools</p>
-          <h1 className="mt-2 text-4xl font-semibold leading-tight sm:text-5xl">Meet parents who have already asked to hear from you.</h1>
+          <h1 className="mt-2 text-4xl leading-tight sm:text-5xl">Meet parents who have already asked to hear from you.</h1>
           <p className="mt-4 text-lg leading-7 text-muted">SchoolCove is free for parents. When a parent fills the interest form on your page, you get their name, phone number, child's age and what they are looking for.</p>
           <div className="mt-7 space-y-3">
             {[
@@ -37,15 +36,9 @@ export default async function ForSchools() {
         </div>
         <div id="signup" className="scroll-mt-24">
           <div className="card p-6 sm:p-8">
-            {user ? (
-              <div className="text-center"><p className="font-display text-2xl font-semibold">You are logged in</p><Link href={user.role === "admin" ? "/admin" : "/dashboard"} className="btn btn-primary mt-4">Go to dashboard</Link></div>
-            ) : (
-              <>
-                <h2 className="text-2xl font-semibold">Claim your school</h2>
-                <p className="mb-5 mt-1 text-sm text-muted">Already have an account? <Link href="/login" className="font-semibold text-coral hover:underline">Log in</Link></p>
-                <SignupForm schools={schools.map((s) => ({ id: s.id, label: `${s.name}, ${s.locality}` }))} />
-              </>
-            )}
+            <h2 className="text-2xl">Claim your school</h2>
+            <p className="mb-5 mt-1 text-sm text-muted">Already have an account? <Link href="/login" className="font-semibold text-coral hover:underline">Log in</Link></p>
+            <SignupForm schools={schools.map((s) => ({ id: s.id, label: `${s.name}, ${s.locality}` }))} />
           </div>
         </div>
       </div>

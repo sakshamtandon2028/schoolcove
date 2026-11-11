@@ -20,7 +20,7 @@ export default function LeadForm({ schoolId, schoolName, programs, label = "📞
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="eyebrow">Share your interest</p>
-              <h2 className="mt-1 text-2xl font-semibold leading-tight">{schoolName}</h2>
+              <h2 className="mt-1 text-2xl leading-tight">{schoolName}</h2>
             </div>
             <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="rounded-full p-2 text-xl leading-none text-muted hover:bg-blush">✕</button>
           </div>
@@ -62,7 +62,7 @@ export default function LeadForm({ schoolId, schoolName, programs, label = "📞
               </div>
               <div><label className="label" htmlFor={`${uid}-msg`}>Anything you want to ask? <span className="font-normal text-muted">(optional)</span></label><textarea id={`${uid}-msg`} name="message" rows={2} maxLength={600} className="input" placeholder="For example: daycare timings, fees, transport" /></div>
               <label className="flex items-start gap-2.5 text-sm leading-5 text-muted">
-                <input type="checkbox" name="consent" required className="mt-0.5 size-5 shrink-0 accent-[#e85d5d]" />
+                <input type="checkbox" name="consent" required className="mt-0.5 size-5 shrink-0 accent-[#d23f3f]" />
                 <span>I agree that SchoolCove can share these details with {schoolName} so the school can contact me.</span>
               </label>
               {state?.error && <p role="alert" className="rounded-2xl bg-blush px-4 py-3 text-sm font-medium">{state.error}</p>}

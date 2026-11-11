@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { unstable_cache } from "next/cache";
 import { q } from "@/lib/db";
+import ViewBeacon from "@/components/ViewBeacon";
 import { schoolBySlug, googleMapsUrl, appleMapsUrl, directionsUrl, embedMapUrl, ageLabel, mapsQuery } from "@/lib/schools";
 import { googleInfo } from "@/lib/google";
 import type { Review } from "@/lib/types";
@@ -11,16 +13,24 @@ import LeadForm from "@/components/LeadForm";
 import ReviewForm from "@/components/ReviewForm";
 import Tabs from "@/components/Tabs";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 600;
+export const dynamicParams = true;
+export async function generateStaticParams() { return []; }
+
+const approvedReviews = (id: number) => unstable_cache(
+  () => q<Review>(`select id,school_id,name,rating,body,status,created_at from reviews where school_id=$1 and status='approved' order by created_at desc`, [id]),
+  ["reviews", String(id)], { tags: ["reviews"], revalidate: 600 })();
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const s = await schoolBySlug((await params).slug);
   if (!s) return { title: "School not found" };
-  return { title: `${s.name}, ${s.locality}`, description: s.data.tagline || s.data.about.slice(0, 150) };
+  const title = `${s.name}, ${s.locality}, Gurugram: fees, admission, reviews`;
+  const description = (s.data.tagline ? s.data.tagline + " " : "") + s.data.about.slice(0, 140);
+  return { title, description, alternates: { canonical: `/schools/${s.slug}` }, openGraph: { title, description, images: s.data.images[0]?.startsWith("/") ? [s.data.images[0]] : undefined } };
 }
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <section className="card p-5 sm:p-7"><h2 className="text-2xl font-semibold">{title}</h2><div className="mt-4">{children}</div></section>
+  <section className="card p-5 sm:p-7"><h2 className="text-2xl">{title}</h2><div className="mt-4">{children}</div></section>
 );
 const List = ({ items, mark, tone }: { items: string[]; mark: string; tone: string }) => (
   <ul className="space-y-2">{items.map((i) => <li key={i} className="flex gap-2.5 text-sm leading-6"><span className={`mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full text-xs ${tone}`} aria-hidden="true">{mark}</span><span>{i}</span></li>)}</ul>
@@ -30,16 +40,22 @@ export default async function SchoolPage({ params }: { params: Promise<{ slug: s
   const school = await schoolBySlug((await params).slug);
   if (!school) notFound();
   const d = school.data;
-  await q(`update schools set views=views+1 where id=$1`, [school.id]);
   const [google, reviews] = await Promise.all([
     googleInfo(school),
-    q<Review>(`select * from reviews where school_id=$1 and status='approved' order by created_at desc`, [school.id]),
+    approvedReviews(school.id),
   ]);
   const programNames = [...d.programs.map((p) => p.name), ...(school.has_daycare && !d.programs.some((p) => /day ?care/i.test(p.name)) ? ["Daycare"] : [])];
   const lead = (label?: string, className?: string) => <LeadForm schoolId={school.id} schoolName={`${school.name}, ${school.locality}`} programs={programNames} label={label} className={className} />;
   const ownAvg = reviews.length ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length : null;
   const googleReviewsUrl = google.url || googleMapsUrl(school);
 
+  const jsonLd = {
+    "@context": "https://schema.org", "@type": school.kind === "school" ? "School" : "Preschool", name: school.name,
+    description: d.tagline || d.about.slice(0, 200),
+    address: { "@type": "PostalAddress", streetAddress: school.address, addressLocality: "Gurugram", addressRegion: "Haryana", addressCountry: "IN" },
+    ...(school.lat && school.lng ? { geo: { "@type": "GeoCoordinates", latitude: school.lat, longitude: school.lng } } : {}),
+    ...(google.rating && google.count ? { aggregateRating: { "@type": "AggregateRating", ratingValue: google.rating, reviewCount: google.count } } : {}),
+  };
   const facts: [string, string | undefined | null][] = [
     ["Type", school.kind === "school" ? "School with pre-primary classes" : "Preschool" + (school.has_daycare ? " and daycare" : "")],
     ["Classes", d.grades],
@@ -110,7 +126,7 @@ export default async function SchoolPage({ params }: { params: Promise<{ slug: s
 
       {d.images.length > 1 && (
         <Section title="Photos">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{d.images.map((src, i) => <a key={src} href={src} target="_blank" rel="noreferrer"><img src={src} alt={`${school.name} photo ${i + 1}`} loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover transition duration-500 hover:scale-[1.03] hover:shadow-lg" /></a>)}</div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{d.images.map((src, i) => <a key={src} href={src} target="_blank" rel="noreferrer" className="block overflow-hidden rounded-2xl"><SchoolImage school={school} index={i} sizes="(min-width: 640px) 30vw, 50vw" className="aspect-[4/3] w-full transition duration-500 hover:scale-[1.04]" /></a>)}</div>
           <p className="mt-3 text-xs text-muted">Photos are from the school.</p>
         </Section>
       )}
@@ -216,9 +232,11 @@ export default async function SchoolPage({ params }: { params: Promise<{ slug: s
   return (
     <div className="container-x pt-6">
       <p className="text-sm"><Link href="/schools" className="font-semibold text-muted hover:text-coral">← All schools</Link></p>
-      <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_22rem]">
+      <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_22rem] xl:grid-cols-[1fr_24rem] xl:gap-10">
         <div className="min-w-0">
-          <div className="overflow-hidden rounded-3xl"><SchoolImage school={school} className="h-56 w-full sm:h-80" /></div>
+          <ViewBeacon slug={school.slug} />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+          <div className="overflow-hidden rounded-3xl"><SchoolImage school={school} priority sizes="(min-width: 1024px) 60vw, 100vw" className="h-56 w-full sm:h-80 xl:h-[26rem]" /></div>
           <div className="mt-5 flex flex-wrap gap-1.5">
             {school.choice && <span className="chip choice-ribbon text-white">🏅 SchoolCove's Choice</span>}
             {school.promoted && <span className="chip bg-coral text-white">🚀 Promoted</span>}
@@ -226,7 +244,7 @@ export default async function SchoolPage({ params }: { params: Promise<{ slug: s
             <span className="chip bg-lavender">{school.kind === "school" ? "School with pre-primary" : "Preschool"}</span>
             {school.has_daycare && <span className="chip bg-sun">Daycare</span>}
           </div>
-          <h1 className="mt-3 text-3xl font-semibold leading-tight sm:text-5xl">{school.name}</h1>
+          <h1 className="mt-3 text-3xl leading-tight sm:text-5xl">{school.name}</h1>
           <p className="mt-2 text-muted">📍 {school.locality}, Gurugram</p>
           {google.rating && <p className="mt-2 flex items-center gap-2 text-sm"><Stars value={google.rating} /><b>{google.rating.toFixed(1)}</b>{google.count ? <span className="text-muted">({google.count.toLocaleString("en-IN")} Google reviews)</span> : null}</p>}
           {d.tagline && <p className="mt-3 text-lg leading-7 text-ink/80">{d.tagline}</p>}
@@ -253,7 +271,7 @@ export default async function SchoolPage({ params }: { params: Promise<{ slug: s
             </div>
             <p className="mt-3 text-center text-xs text-muted">Free for parents. Your details go only to this school.</p>
           </div>
-          <div className="mt-4"><Tip emoji="📋" title="Visiting soon?">Take the <Link href="/guide#visit" className="font-semibold text-coral hover:underline">visit checklist</Link> with you.</Tip></div>
+          <div className="mt-4"><Tip emoji="📋" title="Visiting soon?">Take the <Link href="/guide#visit" className="font-bold underline">visit checklist</Link> with you.</Tip></div>
         </aside>
       </div>
 

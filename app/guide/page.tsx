@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "Parent guide: how to choose a preschool or daycare" };
+export const metadata = { title: "Parent guide: how to choose a preschool or daycare in Gurugram", description: "Dos and don'ts, an age guide and a 10-question visit checklist for parents choosing a preschool or daycare.", alternates: { canonical: "/guide" } };
 
 const DO = [
   ["Visit during school hours", "Watch a real class for ten minutes. Are children busy and calm? Do teachers get down to the child's eye level?"],
@@ -43,33 +43,33 @@ export default function Guide() {
   return (
     <div className="container-x pt-8">
       <p className="eyebrow">Parent guide</p>
-      <h1 className="mt-1 max-w-3xl text-4xl font-semibold sm:text-5xl">How to choose a preschool or daycare</h1>
+      <h1 className="mt-1 max-w-3xl text-4xl sm:text-5xl">How to choose a preschool or daycare</h1>
       <p className="mt-3 max-w-2xl text-lg leading-7 text-muted">A short, plain guide. What to do, what to avoid, and what to ask when you visit.</p>
 
       <div className="mt-8 grid gap-5 lg:grid-cols-2">
         <section className="card p-6">
-          <h2 className="text-2xl font-semibold">✅ What to do</h2>
+          <h2 className="text-2xl">✅ What to do</h2>
           <ul className="mt-4 space-y-4">{DO.map(([t, b]) => <li key={t} className="flex gap-3"><span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-mint text-sm text-emerald-700">✓</span><div><p className="font-bold">{t}</p><p className="text-sm leading-6 text-muted">{b}</p></div></li>)}</ul>
         </section>
         <section className="card p-6">
-          <h2 className="text-2xl font-semibold">🚫 What not to do</h2>
+          <h2 className="text-2xl">🚫 What not to do</h2>
           <ul className="mt-4 space-y-4">{DONT.map(([t, b]) => <li key={t} className="flex gap-3"><span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-blush text-sm text-coral">✕</span><div><p className="font-bold">{t}</p><p className="text-sm leading-6 text-muted">{b}</p></div></li>)}</ul>
         </section>
       </div>
 
       <section className="card mt-5 p-6">
-        <h2 className="text-2xl font-semibold">🧒 Which programme fits which age?</h2>
+        <h2 className="text-2xl">🧒 Which programme fits which age?</h2>
         <p className="mt-1 text-sm text-muted">Names and cut-off dates differ between schools, so always confirm the age rule for the session you want.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{AGES.map(([age, name, what]) => <div key={age} className="rounded-2xl bg-lavender/60 p-4"><p className="text-sm font-bold text-coral">{age}</p><p className="font-bold">{name}</p><p className="mt-1 text-sm leading-6 text-ink/80">{what}</p></div>)}</div>
       </section>
 
       <div className="mt-5 grid gap-5 lg:grid-cols-[1.4fr_1fr]">
         <section id="visit" className="card scroll-mt-24 p-6">
-          <h2 className="text-2xl font-semibold">📋 Visit checklist: 10 questions to ask</h2>
+          <h2 className="text-2xl">📋 Visit checklist: 10 questions to ask</h2>
           <ol className="mt-4 space-y-2.5">{VISIT.map((v, i) => <li key={v} className="flex gap-3 text-sm leading-6"><span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-coral text-xs font-bold text-white">{i + 1}</span>{v}</li>)}</ol>
         </section>
         <section className="card p-6">
-          <h2 className="text-2xl font-semibold">📄 Documents usually needed</h2>
+          <h2 className="text-2xl">📄 Documents usually needed</h2>
           <ul className="mt-4 space-y-2">{DOCS.map((d) => <li key={d} className="flex gap-2 text-sm leading-6"><span aria-hidden="true">•</span>{d}</li>)}</ul>
           <p className="mt-4 rounded-2xl bg-sun p-3 text-sm leading-6">Each school has its own list. Check the Admission tab on the school's page.</p>
         </section>

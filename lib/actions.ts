@@ -1,9 +1,10 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { q } from "./db";
+import { q, rateLimit } from "./db";
 import { createSession, destroySession, getUser, requireAdmin, requireSchoolUser } from "./auth";
 import { LEAD_STATUSES } from "./types";
 
@@ -12,6 +13,14 @@ export type FormState = { ok?: boolean; error?: string } | null;
 const str = (fd: FormData, k: string, max = 500) => String(fd.get(k) ?? "").trim().slice(0, max);
 const validPhone = (p: string) => p.replace(/\D/g, "").length >= 10;
 const validEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+const DUMMY_HASH = bcrypt.hashSync("not-a-real-password", 12);
+const SLOW_DOWN = "Too many attempts. Please wait a few minutes and try again.";
+async function clientKey(scope: string) {
+  const h = await headers();
+  const ip = (h.get("x-real-ip") || h.get("x-forwarded-for")?.split(",")[0] || "unknown").trim();
+  return `${scope}:${ip}`;
+}
+const refreshSchools = () => { revalidateTag("schools"); revalidatePath("/", "layout"); };
 
 /* ---------- Parents ---------- */
 
@@ -23,6 +32,7 @@ export async function submitLead(_: FormState, fd: FormData): Promise<FormState>
   if (!validPhone(phone)) return { error: "Please enter a valid phone number with at least 10 digits." };
   if (email && !validEmail(email)) return { error: "That email address does not look right." };
   if (fd.get("consent") !== "on") return { error: "Please tick the box so we can share your details with the school." };
+  if (!(await rateLimit(await clientKey("lead"), 8, 3600))) return { error: SLOW_DOWN };
   const school = (await q(`select id, auto_unlock from schools where id=$1`, [schoolId]))[0];
   if (!school) return { error: "We could not find that school. Please refresh and try again." };
   const dup = await q(
@@ -44,6 +54,7 @@ export async function submitReview(_: FormState, fd: FormData): Promise<FormStat
   if (!schoolId || !name) return { error: "Please enter your name." };
   if (!(rating >= 1 && rating <= 5)) return { error: "Please choose a star rating." };
   if (body.length < 20) return { error: "Please write at least a sentence or two about your experience." };
+  if (!(await rateLimit(await clientKey("review"), 4, 3600))) return { error: SLOW_DOWN };
   await q(`insert into reviews (school_id,name,rating,body) values ($1,$2,$3,$4)`, [schoolId, name, Math.round(rating), body]);
   return { ok: true };
 }
@@ -55,10 +66,11 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
   const name = str(fd, "name", 100), schoolId = Number(fd.get("school_id"));
   if (!name) return { error: "Please enter your name." };
   if (!validEmail(email)) return { error: "Please enter a valid email address." };
-  if (password.length < 8) return { error: "Please choose a password with at least 8 characters." };
+  if (password.length < 10 || password.length > 200) return { error: "Please choose a password with at least 10 characters." };
+  if (!(await rateLimit(await clientKey("signup"), 5, 3600))) return { error: SLOW_DOWN };
   if (!schoolId) return { error: "Please select your school." };
   if ((await q(`select id from users where email=$1`, [email])).length) return { error: "An account with this email already exists. Try logging in." };
-  const hash = await bcrypt.hash(password, 10);
+  const hash = await bcrypt.hash(password, 12);
   const [u] = await q<{ id: number }>(
     `insert into users (email,password_hash,name,role,school_id,status,phone,designation) values ($1,$2,$3,'school',$4,'pending',$5,$6) returning id`,
     [email, hash, name, schoolId, str(fd, "phone", 20) || null, str(fd, "designation", 80) || null]);
@@ -68,8 +80,11 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
 
 export async function login(_: FormState, fd: FormData): Promise<FormState> {
   const email = str(fd, "email", 200).toLowerCase(), password = String(fd.get("password") ?? "");
+  if (!(await rateLimit(await clientKey("login"), 10, 900)) || !(await rateLimit(`login-acct:${email}`, 10, 900))) return { error: SLOW_DOWN };
   const u = (await q<{ id: number; password_hash: string; role: string }>(`select id,password_hash,role from users where email=$1`, [email]))[0];
-  if (!u || !(await bcrypt.compare(password, u.password_hash))) return { error: "Email or password is incorrect." };
+  // Always run a hash comparison so response time does not reveal whether an account exists.
+  const ok = await bcrypt.compare(password, u?.password_hash || DUMMY_HASH);
+  if (!u || !ok) return { error: "Email or password is incorrect." };
   await createSession(u.id);
   redirect(u.role === "admin" ? "/admin" : "/dashboard");
 }
@@ -114,14 +129,15 @@ export async function updateProfile(_: FormState, fd: FormData): Promise<FormSta
   d.tagline = str(fd, "tagline", 160) || undefined;
   d.hours = str(fd, "hours", 160) || undefined;
   d.curriculum = str(fd, "curriculum", 120) || undefined;
-  d.website = str(fd, "website", 300) || undefined;
+  const site = str(fd, "website", 300);
+  d.website = /^https:\/\/[^\s"<>]+$/.test(site) ? site : undefined;
   d.email = str(fd, "email", 200) || undefined;
   d.phones = lines(str(fd, "phones", 300));
   d.facilities = lines(str(fd, "facilities", 1500));
   d.meals = str(fd, "meals", 400) || undefined;
   d.transport = str(fd, "transport", 400) || undefined;
   d.ratio = str(fd, "ratio", 200) || undefined;
-  d.images = lines(str(fd, "images", 3000)).filter((u) => u.startsWith("/") || u.startsWith("https://"));
+  d.images = lines(str(fd, "images", 3000)).filter((u) => /^\/schools\/[\w\-./]+$/.test(u) || /^https:\/\/[^\s"<>]+$/.test(u)).slice(0, 12);
   const feeItems = lines(str(fd, "fees", 2000)).map((l) => {
     const i = l.lastIndexOf(":");
     return i > 0 ? { label: l.slice(0, i).trim(), amount: l.slice(i + 1).trim() } : null;
@@ -132,7 +148,7 @@ export async function updateProfile(_: FormState, fd: FormData): Promise<FormSta
   d.admission = { ...(d.admission || {}), status: admissionNote || undefined };
   const feeFrom = Number(str(fd, "fee_from", 12).replace(/\D/g, "")) || null;
   await q(`update schools set data=$1::jsonb, fee_from=$2, edited=true, updated_at=now() where id=$3`, [JSON.stringify(d), feeFrom, schoolId]);
-  revalidatePath(`/schools/${row.slug}`); revalidatePath("/schools"); revalidatePath("/");
+  refreshSchools();
   return { ok: true };
 }
 
@@ -157,7 +173,7 @@ export async function setReviewStatus(fd: FormData) {
   const status = str(fd, "status", 20), id = Number(fd.get("id"));
   if (status === "delete") await q(`delete from reviews where id=$1`, [id]);
   else if (["approved", "pending"].includes(status)) await q(`update reviews set status=$1 where id=$2`, [status, id]);
-  revalidatePath("/admin");
+  revalidateTag("reviews"); revalidatePath("/", "layout");
 }
 
 export async function setSchoolFlag(fd: FormData) {
@@ -165,5 +181,5 @@ export async function setSchoolFlag(fd: FormData) {
   const flag = str(fd, "flag", 20);
   if (!["promoted", "partner", "auto_unlock", "choice"].includes(flag)) return;
   await q(`update schools set ${flag}=$1 where id=$2`, [fd.get("value") === "1", Number(fd.get("id"))]);
-  revalidatePath("/admin"); revalidatePath("/schools"); revalidatePath("/");
+  refreshSchools();
 }

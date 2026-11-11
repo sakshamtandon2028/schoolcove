@@ -13,7 +13,7 @@ export default function Tabs({ tabs }: { tabs: { id: string; label: string; cont
       <div role="tablist" className="sticky top-16 z-20 -mx-4 flex gap-1 overflow-x-auto border-b border-line bg-bg/95 px-4 py-2 backdrop-blur sm:mx-0 sm:rounded-full sm:border sm:px-2">
         {tabs.map((t) => (
           <button key={t.id} role="tab" aria-selected={active === t.id} onClick={() => pick(t.id)}
-            className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold transition-all duration-300 active:scale-95 ${active === t.id ? "bg-coral text-white shadow-[0_8px_18px_-10px_rgba(232,93,93,0.9)]" : "text-ink hover:bg-blush"}`}>
+            className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold transition-all duration-300 active:scale-95 ${active === t.id ? "bg-coral text-white shadow-[0_8px_18px_-10px_rgba(210,63,63,0.8)]" : "text-ink hover:bg-blush"}`}>
             {t.label}
           </button>
         ))}

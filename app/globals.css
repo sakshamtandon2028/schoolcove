@@ -5,20 +5,21 @@
   --color-ink: #2a2420;
   --color-muted: #6b6560;
   --color-line: #ece6de;
-  --color-coral: #e85d5d;
-  --color-coral-dark: #cf4747;
+  --color-coral: #d23f3f;
+  --color-coral-dark: #b53232;
   --color-coral-soft: #fde4e1;
   --color-mint: #d9f2e6;
   --color-lavender: #e7e3fa;
   --color-blush: #fde9ec;
   --color-sun: #fff3d6;
-  --font-display: "Fraunces", Georgia, serif;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Plus Jakarta Sans Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 html { scroll-behavior: smooth; }
 body { background: var(--color-bg); color: var(--color-ink); font-family: var(--font-sans); }
-h1, h2, .font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+h1, h2, .font-display { font-family: var(--font-display); letter-spacing: -0.03em; font-weight: 800; }
+h1 { line-height: 1.05; }
 
 @layer components {
   .card { @apply rounded-3xl border border-line bg-white shadow-[0_8px_30px_-18px_rgba(42,36,32,0.25)]; }
@@ -29,7 +30,7 @@ h1, h2, .font-display { font-family: var(--font-display); letter-spacing: -0.01e
   .input { @apply min-h-11 w-full rounded-2xl border border-line bg-white px-4 py-2.5 text-base outline-none focus:border-coral/60; }
   .label { @apply mb-1 block text-sm font-semibold; }
   .eyebrow { @apply text-xs font-bold uppercase tracking-widest text-coral; }
-  .container-x { @apply mx-auto w-full max-w-6xl px-4 sm:px-6; }
+  .container-x { @apply mx-auto w-full max-w-[1840px] px-4 sm:px-8 lg:px-12 2xl:px-20; }
 }
 
 /* ---------- Motion: gentle, quick, and switched off for people who prefer less movement ---------- */
@@ -54,8 +55,8 @@ h1, h2, .font-display { font-family: var(--font-display); letter-spacing: -0.01e
 .btn { transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
 .btn:hover { transform: translateY(-1px); }
 .btn:active { transform: translateY(0) scale(0.97); }
-.btn-primary { box-shadow: 0 8px 20px -10px rgba(232, 93, 93, 0.8); }
-.btn-primary:hover { box-shadow: 0 12px 24px -10px rgba(232, 93, 93, 0.9); }
+.btn-primary { box-shadow: 0 8px 20px -10px rgba(210, 63, 63, 0.7); }
+.btn-primary:hover { box-shadow: 0 12px 24px -10px rgba(210, 63, 63, 0.8); }
 .btn:hover .nudge { transform: translateX(3px); }
 .nudge { display: inline-block; transition: transform 0.2s ease; }
 .chip { transition: transform 0.15s ease, background-color 0.2s ease; }

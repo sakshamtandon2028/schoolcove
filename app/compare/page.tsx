@@ -4,7 +4,6 @@ import { SchoolImage, Stars } from "@/components/bits";
 import { CompareRedirect, RemoveFromCompare } from "@/components/Compare";
 import LeadForm from "@/components/LeadForm";
 
-export const dynamic = "force-dynamic";
 export const metadata = { title: "Compare schools" };
 
 export default async function ComparePage({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
@@ -18,7 +17,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
       <div className="container-x py-16 text-center">
         {sp.s === undefined && <CompareRedirect />}
         <p className="text-5xl" aria-hidden="true">⚖️</p>
-        <h1 className="mt-4 text-4xl font-semibold">Compare schools side by side</h1>
+        <h1 className="mt-4 text-4xl">Compare schools side by side</h1>
         <p className="mx-auto mt-2 max-w-md text-muted">Tap "+ Compare" on up to three schools, then come back here to see them next to each other.</p>
         <Link href="/schools" className="btn btn-primary mt-6">Browse schools</Link>
       </div>
@@ -46,7 +45,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
   return (
     <div className="container-x pt-8">
       <p className="eyebrow">Side by side</p>
-      <h1 className="mt-1 text-4xl font-semibold sm:text-5xl">Compare your shortlist</h1>
+      <h1 className="mt-1 text-4xl sm:text-5xl">Compare your shortlist</h1>
       <p className="mt-2 text-muted">"Ask the school" means the school has not published that detail.</p>
       <div className="mt-6 overflow-x-auto pb-2">
         <table className="w-full min-w-[40rem] border-separate border-spacing-x-3 text-sm">

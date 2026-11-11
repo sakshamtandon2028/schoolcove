@@ -2,7 +2,7 @@ import Link from "next/link";
 import { q } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { logout, setUserStatus, setReviewStatus, setSchoolFlag } from "@/lib/actions";
-import { allSchools } from "@/lib/schools";
+import { loadSchools as allSchools } from "@/lib/schools";
 import type { Lead, Review, User } from "@/lib/types";
 import LeadsTable from "@/components/LeadsTable";
 import { ProfileForm } from "@/components/AuthForms";
@@ -39,7 +39,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
   return (
     <div className="container-x pt-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div><p className="eyebrow">SchoolCove admin</p><h1 className="mt-1 text-3xl font-semibold sm:text-4xl">Control room</h1></div>
+        <div><p className="eyebrow">SchoolCove admin</p><h1 className="mt-1 text-3xl sm:text-4xl">Control room</h1></div>
         <div className="flex gap-2"><a href="/api/export" className="btn btn-primary">⬇️ All enquiries (Excel)</a><form action={logout}><button className="btn btn-ghost">Log out</button></form></div>
       </div>
 
@@ -50,7 +50,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
       </div>
 
       <section className="card mt-6 p-5 sm:p-6">
-        <h2 className="text-2xl font-semibold">School accounts {pendingUsers > 0 && <span className="chip ml-2 bg-coral text-white">{pendingUsers} to verify</span>}</h2>
+        <h2 className="text-2xl">School accounts {pendingUsers > 0 && <span className="chip ml-2 bg-coral text-white">{pendingUsers} to verify</span>}</h2>
         <p className="mb-4 text-sm text-muted">Approve an account only after confirming the person works at the school.</p>
         {users.length ? (
           <div className="overflow-x-auto rounded-2xl border border-line">
@@ -75,7 +75,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
 
       <section className="card mt-6 p-5 sm:p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div><h2 className="text-2xl font-semibold">Parent enquiries</h2><p className="text-sm text-muted">"Share with school" makes the parent's details visible in that school's dashboard and counts it as billable.</p></div>
+          <div><h2 className="text-2xl">Parent enquiries</h2><p className="text-sm text-muted">"Share with school" makes the parent's details visible in that school's dashboard and counts it as billable.</p></div>
           <form className="flex items-center gap-2">
             <select name="school" defaultValue={filterId || ""} aria-label="Filter by school" className="input !min-h-10 !w-64 !py-1.5 text-sm"><option value="">All schools</option>{schools.map((s) => <option key={s.id} value={s.id}>{s.name}, {s.locality}</option>)}</select>
             <button className="btn btn-ghost !min-h-10">Filter</button>
@@ -86,7 +86,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
       </section>
 
       <section className="card mt-6 p-5 sm:p-6">
-        <h2 className="text-2xl font-semibold">Schools</h2>
+        <h2 className="text-2xl">Schools</h2>
         <p className="mb-4 text-sm text-muted"><b>SchoolCove's Choice</b> features the school on the home page. <b>Promoted</b> lists the school first. <b>Verified</b> shows the "Verified by school" badge. <b>Auto-share</b> sends new enquiries to the school straight away, for schools that have prepaid.</p>
         <div className="overflow-x-auto rounded-2xl border border-line">
           <table className="w-full min-w-[46rem] text-left text-sm">
@@ -110,7 +110,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
       </section>
 
       <section className="card mt-6 p-5 sm:p-6">
-        <h2 className="text-2xl font-semibold">Parent reviews {pendingReviews > 0 && <span className="chip ml-2 bg-coral text-white">{pendingReviews} to check</span>}</h2>
+        <h2 className="text-2xl">Parent reviews {pendingReviews > 0 && <span className="chip ml-2 bg-coral text-white">{pendingReviews} to check</span>}</h2>
         <p className="mb-4 text-sm text-muted">Reviews appear on the school page only after you approve them.</p>
         {reviews.length ? (
           <div className="space-y-3">{reviews.map((r) => (

@@ -8,7 +8,7 @@ export default function SchoolCard({ school, distance }: { school: School; dista
   const d = school.data;
   return (
     <article className="card card-lift flex flex-col overflow-hidden">
-      <Link href={`/schools/${school.slug}`} className="relative block overflow-hidden">
+      <Link href={`/schools/${school.slug}`} aria-label={`${school.name}, ${school.locality}`} className="relative block overflow-hidden">
         <SchoolImage school={school} className="zoom h-44 w-full" />
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           {school.choice && <span className="chip choice-ribbon text-white shadow">🏅 SchoolCove's Choice</span>}

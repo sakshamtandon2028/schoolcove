@@ -5,8 +5,7 @@ import SchoolCard from "@/components/SchoolCard";
 import NearMe from "@/components/NearMe";
 import { Tip } from "@/components/bits";
 
-export const dynamic = "force-dynamic";
-export const metadata = { title: "Preschools and daycares in Gurugram" };
+export const metadata = { title: "Preschools and daycares in Gurugram: compare fees, timings and reviews", description: "Browse preschools, playschools and daycares in Gurugram by area, child's age and daycare. See programmes, fees, admission steps and directions.", alternates: { canonical: "/schools" } };
 
 type SP = { q?: string; type?: string; daycare?: string; age?: string; sort?: string; lat?: string; lng?: string };
 const AGES: [string, string, number][] = [["u1", "Under 1 year", 6], ["1", "1 to 2 years", 18], ["2", "2 to 3 years", 30], ["3", "3 years and above", 42]];
@@ -40,7 +39,7 @@ export default async function SchoolsPage({ searchParams }: { searchParams: Prom
   return (
     <div className="container-x pt-8">
       <p className="eyebrow">Gurugram</p>
-      <h1 className="mt-1 text-4xl font-semibold sm:text-5xl">Preschools and daycares</h1>
+      <h1 className="mt-1 text-4xl sm:text-5xl">Preschools and daycares</h1>
       <p className="mt-2 max-w-2xl text-muted">Every profile uses information the school itself has published. Where a school has not shared something, we leave it out and tell you what to ask.</p>
 
       <div className="card mt-6 space-y-4 p-4 sm:p-5">
@@ -73,8 +72,9 @@ export default async function SchoolsPage({ searchParams }: { searchParams: Prom
 
       <p className="mt-6 text-sm text-muted" role="status">{list.length} {list.length === 1 ? "school" : "schools"} found{hasLoc ? ", nearest first. Distances are straight-line and approximate." : "."}</p>
 
+      <h2 className="sr-only">Schools</h2>
       {list.length ? (
-        <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{list.map(({ s, dist }, i) => <div key={s.id} data-reveal="" style={{ ["--d" as string]: `${Math.min(i, 5) * 60}ms` }} className="flex"><div className="flex w-full [&>article]:w-full"><SchoolCard school={s} distance={dist} /></div></div>)}</div>
+        <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">{list.map(({ s, dist }, i) => <div key={s.id} data-reveal="" style={{ ["--d" as string]: `${Math.min(i, 5) * 60}ms` }} className="flex"><div className="flex w-full [&>article]:w-full"><SchoolCard school={s} distance={dist} /></div></div>)}</div>
       ) : (
         <div className="card mt-4 p-10 text-center">
           <p className="text-4xl" aria-hidden="true">🔍</p>
@@ -87,7 +87,7 @@ export default async function SchoolsPage({ searchParams }: { searchParams: Prom
       <div className="mt-10 grid gap-3 sm:grid-cols-3">
         <Tip emoji="💡" title="Shortlist three, visit two">Use Compare to narrow down, then visit your top two in person before deciding.</Tip>
         <Tip emoji="🕘" title="Check timings against your day" tone="bg-lavender">Daycare hours and preschool hours are often different. Ask for both.</Tip>
-        <Tip emoji="📋" title="Not sure what to ask?" tone="bg-mint"><Link href="/guide" className="font-semibold text-coral hover:underline">Open the parent guide</Link> for a visit checklist.</Tip>
+        <Tip emoji="📋" title="Not sure what to ask?" tone="bg-mint"><Link href="/guide" className="font-bold underline">Open the parent guide</Link> for a visit checklist.</Tip>
       </div>
     </div>
   );

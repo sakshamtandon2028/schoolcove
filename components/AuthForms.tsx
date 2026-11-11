@@ -35,7 +35,7 @@ export function SignupForm({ schools, preselect }: { schools: { id: number; labe
         <div><label className="label" htmlFor="su-email">Work email</label><input id="su-email" name="email" type="email" required autoComplete="email" className="input" /></div>
         <div><label className="label" htmlFor="su-phone">Phone</label><input id="su-phone" name="phone" type="tel" maxLength={20} autoComplete="tel" className="input" /></div>
       </div>
-      <div><label className="label" htmlFor="su-pw">Create a password</label><input id="su-pw" name="password" type="password" required minLength={8} autoComplete="new-password" className="input" placeholder="At least 8 characters" /></div>
+      <div><label className="label" htmlFor="su-pw">Create a password</label><input id="su-pw" name="password" type="password" required minLength={10} autoComplete="new-password" className="input" placeholder="At least 10 characters" /></div>
       <Err msg={state?.error} />
       <button disabled={pending} className="btn btn-primary w-full !min-h-12">{pending ? "Creating account..." : "Create school account"}</button>
       <p className="text-center text-xs text-muted">We verify every account before giving access to a school's enquiries.</p>

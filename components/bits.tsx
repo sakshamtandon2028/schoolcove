@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { School } from "@/lib/types";
 
 export function Stars({ value, size = "text-base" }: { value: number; size?: string }) {
@@ -11,9 +12,17 @@ export function Stars({ value, size = "text-base" }: { value: number; size?: str
 
 const tones = ["bg-mint", "bg-lavender", "bg-blush", "bg-sun"];
 
-export function SchoolImage({ school, className = "", index = 0 }: { school: Pick<School, "id" | "name" | "data">; className?: string; index?: number }) {
+export function SchoolImage({ school, className = "", index = 0, sizes = "(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw", priority = false }:
+  { school: Pick<School, "id" | "name" | "data">; className?: string; index?: number; sizes?: string; priority?: boolean }) {
   const src = school.data.images?.[index];
-  if (src) return <img src={src} alt={`${school.name} campus`} loading="lazy" className={`object-cover ${className}`} />;
+  if (src?.startsWith("/")) {
+    return (
+      <div className={`relative overflow-hidden ${className}`}>
+        <Image src={src} alt={`${school.name} campus`} fill sizes={sizes} priority={priority} quality={62} className="object-cover" />
+      </div>
+    );
+  }
+  if (src) return <img src={src} alt={`${school.name} campus`} loading={priority ? "eager" : "lazy"} decoding="async" referrerPolicy="no-referrer" className={`object-cover ${className}`} />;
   return (
     <div className={`flex items-center justify-center ${tones[school.id % tones.length]} ${className}`} aria-hidden="true">
       <span className="text-5xl">🏫</span>
