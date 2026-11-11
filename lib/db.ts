@@ -1,6 +1,9 @@
 import bcrypt from "bcryptjs";
 import { SEED_SCHOOLS } from "./seed";
 
+const SEED_VERSION = "2";
+const CHOICE_SLUG = "apple-blossom-sector-46";
+
 type Row = Record<string, any>;
 type Runner = (text: string, params?: any[]) => Promise<Row[]>;
 
@@ -44,17 +47,31 @@ async function migrate(run: Runner) {
       id serial primary key, school_id int not null references schools(id), name text not null, rating int not null,
       body text not null, status text not null default 'pending', created_at timestamptz not null default now())`,
   ];
+  ddl.push(
+    `alter table schools add column if not exists choice boolean not null default false`,
+    `alter table schools add column if not exists edited boolean not null default false`,
+    `create table if not exists meta (key text primary key, value text not null)`);
   for (const s of ddl) await run(s);
 
-  const [{ n }] = await run(`select count(*)::int as n from schools`);
-  if (n === 0) {
+  // Starter data: inserted on first run, and refreshed when SEED_VERSION changes.
+  // Pages a school or admin has edited by hand are never overwritten.
+  const current = (await run(`select value from meta where key='seed_version'`))[0]?.value;
+  if (current !== SEED_VERSION) {
     for (const s of SEED_SCHOOLS) {
-      await run(
-        `insert into schools (slug,name,locality,address,kind,lat,lng,min_age_months,has_daycare,fee_from,partner,auto_unlock,data)
-         values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb) on conflict (slug) do nothing`,
-        [s.slug, s.name, s.locality, s.address, s.kind, s.lat, s.lng, s.min_age_months, s.has_daycare, s.fee_from, s.partner, s.partner, JSON.stringify(s.data)]
-      );
+      const args = [s.slug, s.name, s.locality, s.address, s.kind, s.lat, s.lng, s.min_age_months, s.has_daycare, s.fee_from, s.partner, s.partner, JSON.stringify(s.data)];
+      const exists = (await run(`select edited from schools where slug=$1`, [s.slug]))[0];
+      if (!exists) {
+        await run(
+          `insert into schools (slug,name,locality,address,kind,lat,lng,min_age_months,has_daycare,fee_from,partner,auto_unlock,data)
+           values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb) on conflict (slug) do nothing`, args);
+      } else if (!exists.edited) {
+        await run(
+          `update schools set name=$2,locality=$3,address=$4,kind=$5,lat=$6,lng=$7,min_age_months=$8,has_daycare=$9,fee_from=$10,data=$13::jsonb,updated_at=now()
+           where slug=$1 and ($11::boolean is not null) and ($12::boolean is not null)`, args);
+      }
     }
+    if (!current || Number(current) < 2) await run(`update schools set choice=(slug=$1)`, [CHOICE_SLUG]);
+    await run(`insert into meta (key,value) values ('seed_version',$1) on conflict (key) do update set value=$1`, [SEED_VERSION]);
   }
   const email = (process.env.ADMIN_EMAIL || "admin@schoolcove.in").toLowerCase();
   const existing = await run(`select id from users where role='admin' limit 1`);

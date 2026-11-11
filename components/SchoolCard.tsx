@@ -7,10 +7,11 @@ import { CompareToggle } from "./Compare";
 export default function SchoolCard({ school, distance }: { school: School; distance?: number | null }) {
   const d = school.data;
   return (
-    <article className="card flex flex-col overflow-hidden">
-      <Link href={`/schools/${school.slug}`} className="relative block">
-        <SchoolImage school={school} className="h-44 w-full" />
+    <article className="card card-lift flex flex-col overflow-hidden">
+      <Link href={`/schools/${school.slug}`} className="relative block overflow-hidden">
+        <SchoolImage school={school} className="zoom h-44 w-full" />
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+          {school.choice && <span className="chip choice-ribbon text-white shadow">🏅 SchoolCove's Choice</span>}
           {school.promoted && <span className="chip bg-coral text-white">🚀 Promoted</span>}
           {school.partner && <span className="chip bg-white text-ink shadow">✓ Verified by school</span>}
         </div>
@@ -28,7 +29,7 @@ export default function SchoolCard({ school, distance }: { school: School; dista
         {d.tagline && <p className="mt-3 text-sm leading-6 text-ink/80">{d.tagline}</p>}
         {school.fee_from != null && <p className="mt-2 text-sm font-semibold">💰 From {rupees(school.fee_from)} / month</p>}
         <div className="mt-auto flex flex-wrap gap-2 pt-4">
-          <Link href={`/schools/${school.slug}`} className="btn btn-primary flex-1">View details</Link>
+          <Link href={`/schools/${school.slug}`} className="btn btn-primary flex-1">View details <span className="nudge" aria-hidden="true">→</span></Link>
           <CompareToggle slug={school.slug} />
         </div>
       </div>

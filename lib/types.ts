@@ -40,6 +40,7 @@ export type School = {
   has_daycare: boolean;
   fee_from: number | null;
   promoted: boolean;
+  choice: boolean;
   partner: boolean;
   auto_unlock: boolean;
   views: number;

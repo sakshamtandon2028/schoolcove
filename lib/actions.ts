@@ -131,7 +131,7 @@ export async function updateProfile(_: FormState, fd: FormData): Promise<FormSta
   const admissionNote = str(fd, "admission_status", 200);
   d.admission = { ...(d.admission || {}), status: admissionNote || undefined };
   const feeFrom = Number(str(fd, "fee_from", 12).replace(/\D/g, "")) || null;
-  await q(`update schools set data=$1::jsonb, fee_from=$2, updated_at=now() where id=$3`, [JSON.stringify(d), feeFrom, schoolId]);
+  await q(`update schools set data=$1::jsonb, fee_from=$2, edited=true, updated_at=now() where id=$3`, [JSON.stringify(d), feeFrom, schoolId]);
   revalidatePath(`/schools/${row.slug}`); revalidatePath("/schools"); revalidatePath("/");
   return { ok: true };
 }
@@ -163,7 +163,7 @@ export async function setReviewStatus(fd: FormData) {
 export async function setSchoolFlag(fd: FormData) {
   await requireAdmin();
   const flag = str(fd, "flag", 20);
-  if (!["promoted", "partner", "auto_unlock"].includes(flag)) return;
+  if (!["promoted", "partner", "auto_unlock", "choice"].includes(flag)) return;
   await q(`update schools set ${flag}=$1 where id=$2`, [fd.get("value") === "1", Number(fd.get("id"))]);
   revalidatePath("/admin"); revalidatePath("/schools"); revalidatePath("/");
 }

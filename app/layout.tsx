@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header, { Footer } from "@/components/Header";
 import { CompareBar } from "@/components/Compare";
+import Motion from "@/components/Motion";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: { default: "SchoolCove | Preschools and daycares in Gurugram", template: "%s | SchoolCove" },
@@ -21,6 +23,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main>{children}</main>
         <Footer />
         <CompareBar />
+        <Suspense><Motion /></Suspense>
+        <noscript><style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style></noscript>
       </body>
     </html>
   );

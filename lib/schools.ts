@@ -2,7 +2,7 @@ import { q } from "./db";
 import type { School } from "./types";
 
 export async function allSchools(): Promise<School[]> {
-  return q<School>(`select * from schools order by promoted desc, partner desc, name asc, locality asc`);
+  return q<School>(`select * from schools order by choice desc, promoted desc, partner desc, (jsonb_array_length(data->'images')>0) desc, name asc, locality asc`);
 }
 export async function schoolBySlug(slug: string): Promise<School | null> {
   return (await q<School>(`select * from schools where slug=$1`, [slug]))[0] || null;

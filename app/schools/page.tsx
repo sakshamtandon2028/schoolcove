@@ -74,7 +74,7 @@ export default async function SchoolsPage({ searchParams }: { searchParams: Prom
       <p className="mt-6 text-sm text-muted" role="status">{list.length} {list.length === 1 ? "school" : "schools"} found{hasLoc ? ", nearest first. Distances are straight-line and approximate." : "."}</p>
 
       {list.length ? (
-        <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{list.map(({ s, dist }) => <SchoolCard key={s.id} school={s} distance={dist} />)}</div>
+        <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{list.map(({ s, dist }, i) => <div key={s.id} data-reveal="" style={{ ["--d" as string]: `${Math.min(i, 5) * 60}ms` }} className="flex"><div className="flex w-full [&>article]:w-full"><SchoolCard school={s} distance={dist} /></div></div>)}</div>
       ) : (
         <div className="card mt-4 p-10 text-center">
           <p className="text-4xl" aria-hidden="true">🔍</p>

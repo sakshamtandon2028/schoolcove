@@ -110,7 +110,7 @@ export default async function SchoolPage({ params }: { params: Promise<{ slug: s
 
       {d.images.length > 1 && (
         <Section title="Photos">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{d.images.map((src, i) => <a key={src} href={src} target="_blank" rel="noreferrer"><img src={src} alt={`${school.name} photo ${i + 1}`} loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover" /></a>)}</div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{d.images.map((src, i) => <a key={src} href={src} target="_blank" rel="noreferrer"><img src={src} alt={`${school.name} photo ${i + 1}`} loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover transition duration-500 hover:scale-[1.03] hover:shadow-lg" /></a>)}</div>
           <p className="mt-3 text-xs text-muted">Photos are from the school.</p>
         </Section>
       )}
@@ -220,6 +220,7 @@ export default async function SchoolPage({ params }: { params: Promise<{ slug: s
         <div className="min-w-0">
           <div className="overflow-hidden rounded-3xl"><SchoolImage school={school} className="h-56 w-full sm:h-80" /></div>
           <div className="mt-5 flex flex-wrap gap-1.5">
+            {school.choice && <span className="chip choice-ribbon text-white">🏅 SchoolCove's Choice</span>}
             {school.promoted && <span className="chip bg-coral text-white">🚀 Promoted</span>}
             {school.partner && <span className="chip bg-mint">✓ Verified by school</span>}
             <span className="chip bg-lavender">{school.kind === "school" ? "School with pre-primary" : "Preschool"}</span>
@@ -242,7 +243,7 @@ export default async function SchoolPage({ params }: { params: Promise<{ slug: s
 
         <aside className="lg:sticky lg:top-20 lg:self-start">
           <div className="card border-coral/30 p-5">
-            <p className="font-display text-xl font-semibold">Interested in this school?</p>
+            <p className="font-display text-xl font-semibold">Like what you see? 👋</p>
             <p className="mt-1 text-sm leading-6 text-muted">Share your details once and the admissions team will contact you with fees, timings and visit slots.</p>
             <div className="mt-4 space-y-2">
               {lead()}

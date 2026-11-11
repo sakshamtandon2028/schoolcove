@@ -27,9 +27,9 @@ export default function LeadForm({ schoolId, schoolName, programs, label = "📞
 
           {state?.ok ? (
             <div className="py-10 text-center" role="status">
-              <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-mint text-3xl">✅</div>
-              <h3 className="mt-4 font-display text-2xl font-semibold">Thank you! Your interest is shared.</h3>
-              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted">The admissions team at {schoolName} will call or message you, usually within one or two working days. It is free for you.</p>
+              <div className="tick mx-auto flex size-16 items-center justify-center rounded-full bg-mint text-3xl">✅</div>
+              <h3 className="mt-4 font-display text-2xl font-semibold">Lovely, you're all set!</h3>
+              <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted">We have passed your details to the admissions team at {schoolName}. They will call or message you, usually within one or two working days.</p>
               <button type="button" className="btn btn-ghost mt-5" onClick={() => setOpen(false)}>Close</button>
             </div>
           ) : (

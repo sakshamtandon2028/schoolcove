@@ -87,7 +87,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
 
       <section className="card mt-6 p-5 sm:p-6">
         <h2 className="text-2xl font-semibold">Schools</h2>
-        <p className="mb-4 text-sm text-muted"><b>Promoted</b> lists the school first. <b>Verified</b> shows the "Verified by school" badge. <b>Auto-share</b> sends new enquiries to the school straight away, for schools that have prepaid.</p>
+        <p className="mb-4 text-sm text-muted"><b>SchoolCove's Choice</b> features the school on the home page. <b>Promoted</b> lists the school first. <b>Verified</b> shows the "Verified by school" badge. <b>Auto-share</b> sends new enquiries to the school straight away, for schools that have prepaid.</p>
         <div className="overflow-x-auto rounded-2xl border border-line">
           <table className="w-full min-w-[46rem] text-left text-sm">
             <thead className="bg-bg text-xs uppercase tracking-wide text-muted"><tr><th className="p-3">School</th><th className="p-3">Views</th><th className="p-3">Enquiries</th><th className="p-3">Settings</th><th className="p-3" /></tr></thead>
@@ -96,7 +96,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<{ 
                 <td className="p-3"><Link href={`/schools/${s.slug}`} className="font-semibold hover:text-coral">{s.name}</Link><div className="text-muted">{s.locality}</div></td>
                 <td className="p-3">{s.views}</td>
                 <td className="p-3">{countFor(s.id).n} <span className="text-muted">({countFor(s.id).shared} shared)</span></td>
-                <td className="p-3"><div className="flex flex-wrap gap-1.5"><Flag id={s.id} flag="promoted" on={s.promoted} label="Promoted" /><Flag id={s.id} flag="partner" on={s.partner} label="Verified" /><Flag id={s.id} flag="auto_unlock" on={s.auto_unlock} label="Auto-share" /></div></td>
+                <td className="p-3"><div className="flex flex-wrap gap-1.5"><Flag id={s.id} flag="choice" on={s.choice} label="SchoolCove's Choice" /><Flag id={s.id} flag="promoted" on={s.promoted} label="Promoted" /><Flag id={s.id} flag="partner" on={s.partner} label="Verified" /><Flag id={s.id} flag="auto_unlock" on={s.auto_unlock} label="Auto-share" /></div></td>
                 <td className="p-3"><Link href={`/admin?edit=${s.slug}#edit`} className="font-semibold text-coral hover:underline">Edit page</Link></td>
               </tr>))}</tbody>
           </table>
