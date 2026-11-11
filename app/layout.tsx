@@ -5,6 +5,7 @@ import Header, { Footer } from "@/components/Header";
 import { CompareBar } from "@/components/Compare";
 import Motion from "@/components/Motion";
 import { Suspense } from "react";
+import Script from "next/script";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000");
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Footer />
         <CompareBar />
         <Suspense><Motion /></Suspense>
+        <Script id="ms-clarity" strategy="afterInteractive">{`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","zc16lyr471");`}</Script>
         <noscript><style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style></noscript>
       </body>
     </html>
